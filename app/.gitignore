@@ -1,0 +1,4 @@
+build
+.cxx
+libvpx
+vpx_config.h

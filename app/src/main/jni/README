@@ -1,0 +1,4 @@
+### ./libvpx/configure --target=arm64-android-gcc --disable-examples --enable-external-build --disable-runtime-cpu-detect --disable-docs --disable-unit_tests --disable-webm_io --disable-tools --enable-realtime-only --enable-onthefly-bitpacking --disable-libyuv --disable-vp9 
+### ln -s src/main/jni/vpx_config.h vpx_config.h
+### ln -s src/main/jni/libvpx libvpx
+
