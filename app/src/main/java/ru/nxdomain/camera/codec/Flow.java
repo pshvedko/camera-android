@@ -2,6 +2,9 @@ package ru.nxdomain.camera.codec;
 
 import android.hardware.Camera;
 import android.media.AudioFormat;
+import android.media.AudioManager;
+import android.media.AudioRecord;
+import android.media.MediaRecorder;
 import android.util.Base64;
 
 import androidx.annotation.NonNull;
@@ -131,12 +134,12 @@ public class Flow extends Thread implements Camera.PreviewCallback, VideoEncoder
 
             int bufferSizeInBytes = CODEC_RATE * CHANNEL * 2 / 10; // 100ms
 
-            mPlayer = new AudioPlayer(0, SAMPLE_RATE, CHANNEL_OUT, FORMAT, bufferSizeInBytes);
+            mPlayer = new AudioPlayer(AudioManager.STREAM_VOICE_CALL, SAMPLE_RATE, CHANNEL_OUT, FORMAT, bufferSizeInBytes);
             mPlayer.start();
 
             int frameSizeInSamples = bufferSizeInBytes / 2 / 10; // 10ms
 
-            AudioRecorder recorder = new AudioRecorder(0, SAMPLE_RATE, CHANNEL_IN, FORMAT, bufferSizeInBytes, this);
+            AudioRecorder recorder = new AudioRecorder(MediaRecorder.AudioSource.VOICE_RECOGNITION, SAMPLE_RATE, CHANNEL_IN, FORMAT, bufferSizeInBytes, this);
             recorder.addBuffer(new short[frameSizeInSamples]);
             recorder.addBuffer(new short[frameSizeInSamples]);
             recorder.addBuffer(new short[frameSizeInSamples]);

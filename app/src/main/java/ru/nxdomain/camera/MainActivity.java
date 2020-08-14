@@ -4,6 +4,7 @@ import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.app.Activity;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Color;
@@ -43,6 +44,9 @@ import ru.nxdomain.camera.codec.Size;
 
 public class MainActivity extends Activity implements SurfaceHolder.Callback, View.OnClickListener,
         AdapterView.OnItemClickListener, Flow.Signal {
+
+    public static final String CONFIG_CAMERA_ID = "cameraId";
+
     static {
         System.loadLibrary("camera");
     }
@@ -61,7 +65,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Vi
     };
     private Size[] mCameraSize = new Size[Camera.getNumberOfCameras()];
     private Flow mStream;
-
+    SharedPreferences mPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,6 +80,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Vi
         mSquareView = findViewById(R.id.square);
         mListView = findViewById(R.id.list);
         mListView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+        mPreferences = getPreferences(MODE_PRIVATE);
     }
 
 
@@ -225,10 +230,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Vi
     @Override
     public void surfaceCreated(@NonNull SurfaceHolder holder) {
         Log.i(TAG, "surfaceCreated: holder=" + holder);
-        if (!mStream.isConnected())
-            mCameraId = 0;
         try {
-            mCamera = Camera.open(mCameraId);
+            mCamera = Camera.open(mStream.isConnected() ? mCameraId : 0);
         } catch (Exception e) {
             return;
         }
@@ -378,6 +381,16 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Vi
     protected void onResume() {
         Log.i(TAG, "onResume");
         super.onResume();
+        for (int i = 0; i < Camera.getNumberOfCameras(); i++) {
+            int w = mPreferences.getInt(CONFIG_CAMERA_ID + i + "w", 0);
+            if (w == 0)
+                continue;
+            int h = mPreferences.getInt(CONFIG_CAMERA_ID + i + "h", 0);
+            if (h == 0)
+                continue;
+            mCameraSize[i] = new Size(w, h);
+        }
+        mCameraId = mPreferences.getInt(CONFIG_CAMERA_ID, 0);
     }
 
 
@@ -385,6 +398,15 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Vi
     protected void onPause() {
         Log.i(TAG, "onPause");
         super.onPause();
+        SharedPreferences.Editor editor = mPreferences.edit();
+        for (int i = 0; i < Camera.getNumberOfCameras(); i++) {
+            if (mCameraSize[i] == null)
+                continue;
+            editor.putInt(CONFIG_CAMERA_ID + i + "w", mCameraSize[i].width);
+            editor.putInt(CONFIG_CAMERA_ID + i + "h", mCameraSize[i].height);
+        }
+        editor.putInt(CONFIG_CAMERA_ID, mCameraId);
+        editor.apply();
     }
 
 
