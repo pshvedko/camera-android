@@ -3,7 +3,6 @@ package ru.nxdomain.camera.codec;
 import android.hardware.Camera;
 import android.media.AudioFormat;
 import android.media.AudioManager;
-import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.util.Base64;
 

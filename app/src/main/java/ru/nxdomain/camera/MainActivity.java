@@ -14,8 +14,6 @@ import android.graphics.Typeface;
 import android.hardware.Camera;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.Gravity;
 import android.view.SurfaceHolder;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,7 +23,6 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -33,7 +30,6 @@ import androidx.collection.ArraySet;
 import androidx.core.app.ActivityCompat;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -51,7 +47,6 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Vi
         System.loadLibrary("camera");
     }
 
-    private static final String TAG = "VirtualCamera";
     private PictureView mSurfaceView;
     private RelativeLayout mControlView;
     private Camera mCamera;
@@ -69,10 +64,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Vi
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.i(TAG, "onCreate: savedInstanceState=" + savedInstanceState);
         super.onCreate(savedInstanceState);
-        Hello hello = new Hello("World!");
-        Log.i(TAG, hello.greetings());
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.main);
         mSurfaceView = findViewById(R.id.surface);
@@ -86,7 +78,6 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Vi
 
     @Override
     protected void onStart() {
-        Log.i(TAG, "onStart");
         super.onStart();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             ArraySet<String> permission = new ArraySet<>();
@@ -110,7 +101,6 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Vi
 
     @Override
     protected void onStop() {
-        Log.i(TAG, "onStop");
         if (mStream != null)
             mStream.release();
         super.onStop();
@@ -119,9 +109,6 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Vi
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grants) {
-        Log.i(TAG, "onRequestPermissionsResult: requestCode=" + requestCode +
-                " permissions=" + Arrays.toString(permissions) +
-                " grants=" + Arrays.toString(grants));
         super.onRequestPermissionsResult(requestCode, permissions, grants);
         if (requestCode != 1)
             return;
@@ -141,7 +128,6 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Vi
 
     @Override
     public void onConfigurationChanged(@NonNull Configuration conf) {
-        Log.i(TAG, "onConfigurationChanged");
         super.onConfigurationChanged(conf);
         if (!mSurfaceView.isSquare())
             return;
@@ -152,7 +138,6 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Vi
 
     @Override
     public void onClick(@NonNull final View view) {
-        Log.i(TAG, "onClick: view=" + view);
         switch (view.getId()) {
             case R.id.camera:
                 mCameraId++;
@@ -216,7 +201,6 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Vi
     public void onItemClick(@NonNull AdapterView<?> parent, View view, int position, long id) {
         Object size = parent.getItemAtPosition(position);
         if (size instanceof Size) {
-            Log.i(TAG, "onItemClick: position=" + position + " id=" + id + " size=" + size);
             mCameraSize[mCameraId] = (Size) size;
             SurfaceHolder holder = mSurfaceView.getHolder();
             surfaceDestroyed(holder);
@@ -229,7 +213,6 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Vi
 
     @Override
     public void surfaceCreated(@NonNull SurfaceHolder holder) {
-        Log.i(TAG, "surfaceCreated: holder=" + holder);
         try {
             mCamera = Camera.open(mStream.isConnected() ? mCameraId : 0);
         } catch (Exception e) {
@@ -243,7 +226,6 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Vi
         Camera.Parameters cameraParameters = mCamera.getParameters();
         int focus = 0;
         for (String f : cameraParameters.getSupportedFocusModes()) {
-            Log.i(TAG, "mode=" + f);
             int mode = 1;
             switch (f) {
                 case Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE:
@@ -262,7 +244,6 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Vi
             if (focus < mode) {
                 focus = mode;
                 cameraParameters.setFocusMode(f);
-                Log.i(TAG, "^^^^");
             }
         }
         if (mStream.isConnected() && mCameraSize[mCameraId] != null) {
@@ -275,27 +256,19 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Vi
             Ratio a = new Ratio(getWindow().getDecorView().getWidth(), getWindow().getDecorView().getHeight());
             for (Size s : sizes) {
                 Ratio b = s.ratio();
-                Log.i(TAG, "size=" + s.width + "x" + s.height + " ratio=" + b);
                 if (mStream.isConnected()) {
                     if (a.equals(b) && s.width <= 1280) {
-                        Log.i(TAG, "^^^^");
                         cameraParameters.setPreviewSize(s.width, s.height);
                         mCameraSize[mCameraId] = s;
                     }
                 } else if (s.width <= 320) {
-                    Log.i(TAG, "^^^^");
                     cameraParameters.setPreviewSize(s.width, s.height);
                 }
             }
         }
-        int format = cameraParameters.getPreviewFormat();
-        for (int p : cameraParameters.getSupportedPreviewFormats()) {
-            Log.i(TAG, "format=" + p);
-            if (p == format)
-                Log.i(TAG, "^^^^");
-        }
         final Size size = new Size(cameraParameters.getPreviewSize());
         mCamera.setParameters(cameraParameters);
+        int format = cameraParameters.getPreviewFormat();
         int length = ImageFormat.getBitsPerPixel(format);
         length *= size.height;
         length *= size.width;
@@ -316,7 +289,6 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Vi
 
     @Override
     public void surfaceChanged(@NonNull SurfaceHolder holder, int format, int width, int height) {
-        Log.i(TAG, "surfaceChanged: holder=" + holder + " format=" + format + " width=" + width + " height=" + height);
         Camera.CameraInfo info = new Camera.CameraInfo();
         Camera.getCameraInfo(mCameraId, info);
         int orientation = 90 * getWindowManager().getDefaultDisplay().getRotation();
@@ -330,14 +302,12 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Vi
         }
         orientation += 360;
         orientation %= 360;
-        Log.i(TAG, "orientation=" + info.orientation + ":" + orientation);
         mCamera.setDisplayOrientation(orientation);
     }
 
 
     @Override
     public void surfaceDestroyed(@NonNull SurfaceHolder holder) {
-        Log.i(TAG, "surfaceDestroyed: holder=" + holder);
         mCamera.stopPreview();
         mCamera.cancelAutoFocus();
         mCamera.setPreviewCallbackWithBuffer(null);
@@ -347,7 +317,6 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Vi
 
     @Override
     public void onFlow() {
-        Log.i(TAG, "onFlow");
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -364,7 +333,6 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Vi
 
     @Override
     public void onBackPressed() {
-        Log.i(TAG, "onBackPressed");
         super.onBackPressed();
         finish();
     }
@@ -372,14 +340,12 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Vi
 
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
-        Log.i(TAG, "onWindowFocusChanged: hasFocus=" + hasFocus);
         super.onWindowFocusChanged(hasFocus);
     }
 
 
     @Override
     protected void onResume() {
-        Log.i(TAG, "onResume");
         super.onResume();
         for (int i = 0; i < Camera.getNumberOfCameras(); i++) {
             int w = mPreferences.getInt(CONFIG_CAMERA_ID + i + "w", 0);
@@ -396,7 +362,6 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Vi
 
     @Override
     protected void onPause() {
-        Log.i(TAG, "onPause");
         super.onPause();
         SharedPreferences.Editor editor = mPreferences.edit();
         for (int i = 0; i < Camera.getNumberOfCameras(); i++) {
@@ -412,10 +377,6 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Vi
 
     @Override
     protected void onDestroy() {
-        Log.i(TAG, "onDestroy");
         super.onDestroy();
-        Toast toast = Toast.makeText(this, "It means destruction worked!", Toast.LENGTH_SHORT);
-        toast.setGravity(Gravity.CENTER, 0, 100);
-        toast.show();
     }
 }
