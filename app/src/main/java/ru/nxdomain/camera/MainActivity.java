@@ -20,6 +20,7 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -61,6 +62,10 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Vi
     private Size[] mCameraSize = new Size[Camera.getNumberOfCameras()];
     private Flow mStream;
     SharedPreferences mPreferences;
+    private boolean mVideo;
+    private ImageButton mCameraButton;
+    private ImageButton mSettingButton;
+    private ImageButton mVideoButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,6 +76,9 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Vi
         mControlView = findViewById(R.id.control);
         mSquareView = findViewById(R.id.square);
         mListView = findViewById(R.id.list);
+        mVideoButton = findViewById(R.id.video);
+        mCameraButton = findViewById(R.id.camera);
+        mSettingButton = findViewById(R.id.setting);
         mListView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
         mPreferences = getPreferences(MODE_PRIVATE);
     }
@@ -139,10 +147,20 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Vi
     @Override
     public void onClick(@NonNull final View view) {
         switch (view.getId()) {
+            case R.id.video:
+                if (mVideo) {
+                    final Size size = new Size(mCamera.getParameters().getPreviewSize());
+                    mStream.end();
+                    mStream.setSize(size);
+                    video(false);
+                    break;
+                }
+                video(true);
+                break;
             case R.id.camera:
                 mCameraId++;
                 mCameraId %= Camera.getNumberOfCameras();
-                SurfaceHolder holder = mSurfaceView.getHolder();
+                final SurfaceHolder holder = mSurfaceView.getHolder();
                 surfaceDestroyed(holder);
                 surfaceCreated(holder);
                 surfaceChanged(holder, PixelFormat.RGB_888, 0, 0);
@@ -194,6 +212,15 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Vi
                         mControlView.setAlpha(1);
                     }
                 }).start();
+    }
+
+
+    private void video(boolean on) {
+        mSurfaceView.setVisibility(on ? View.VISIBLE : View.GONE);
+        mCameraButton.setVisibility(on ? View.VISIBLE : View.INVISIBLE);
+        mSettingButton.setVisibility(on ? View.VISIBLE : View.INVISIBLE);
+        mVideoButton.setImageResource(on ? R.mipmap.ic_camera1 : R.mipmap.ic_camera0);
+        mVideo = on;
     }
 
 
@@ -320,6 +347,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Vi
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                video(true);
                 int cameraId = mCameraId;
                 SurfaceHolder holder = mSurfaceView.getHolder();
                 surfaceDestroyed(holder);
@@ -357,6 +385,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Vi
             mCameraSize[i] = new Size(w, h);
         }
         mCameraId = mPreferences.getInt(CONFIG_CAMERA_ID, 0);
+        video(true);
     }
 
 

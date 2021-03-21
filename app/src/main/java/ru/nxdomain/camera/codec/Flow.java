@@ -274,7 +274,7 @@ public class Flow extends Thread implements Camera.PreviewCallback, VideoEncoder
     }
 
     synchronized
-    private void end() {
+    public void end() {
         if (mCoder == null)
             return;
         mCoder.release();
