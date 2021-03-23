@@ -23,14 +23,14 @@
         android:clickable="false"
         android:focusable="auto"
         android:visibility="gone"
-        tools:visibility="invisible">
+        tools:visibility="visible">
 
         <ImageButton
             android:id="@+id/camera"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
-            android:layout_alignParentRight="false"
+            android:layout_alignParentRight="true"
             android:layout_alignParentBottom="true"
             android:layout_marginStart="16dp"
             android:layout_marginLeft="16dp"
@@ -96,7 +96,7 @@
             android:background="@android:color/transparent"
             android:scrollbarStyle="outsideOverlay"
             android:visibility="gone"
-            tools:visibility="visible" />
+            tools:visibility="invisible" />
 
     </RelativeLayout>
 
