@@ -46,4 +46,12 @@ public abstract class Codec<T> extends Thread {
     protected int size() {
         return mQueue.size();
     }
+
+    protected void stash(int size) throws InterruptedException {
+        synchronized (mQueue) {
+            while (size < size()) {
+                mQueue.wait();
+            }
+        }
+    }
 }

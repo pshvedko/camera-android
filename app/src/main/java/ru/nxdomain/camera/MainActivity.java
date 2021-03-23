@@ -67,10 +67,11 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Vi
     private ImageButton mSettingButton;
     private ImageButton mVideoButton;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.main);
         mSurfaceView = findViewById(R.id.surface);
         mControlView = findViewById(R.id.control);
